@@ -1,7 +1,10 @@
 
-{{Form::open(array('url' => "assets/{$asset->id}", 'files' => true, 'method'=>'PUT'))}}
-	
+{{Form::open(array('url' => "assets/{$asset->id}", 'method'=>'DELETE', 'id'=>'delete-asset-form'))}}
+{{Form::close()}}	
 
+
+{{Form::open(array('url' => "assets/{$asset->id}", 'files' => true, 'method'=>'PUT', 'id'=>'edit-asset-form'))}}
+	
 	@if (Input::has('id') && Input::has('type'))
 		<input type="hidden" name="id" value="{{Input::get('id')}}">
 		<input type="hidden" name="type" value="{{Input::get('type')}}">
@@ -27,20 +30,17 @@
 						<label for="file">File</label>
 						<br>
 						<div class="btn btn-default btn-file"> Replace <input type="file" name="file"> </div>
+						<button type="submit" form="delete-asset-form" class="btn btn-danger">Delete</button>
 					</div>
 
 				</fieldset>
 
-
-		
-
 	</div>
 
-	
+{{Form::close()}}	
 
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-		<button tabindex="3" type="submit" class="btn btn-primary">Save</button>
+		<button tabindex="3" type="submit" form="edit-asset-form" class="btn btn-primary">Save</button>
 	</div>
 	
-{{Form::close()}}

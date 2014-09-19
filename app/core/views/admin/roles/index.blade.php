@@ -1,4 +1,7 @@
-<!-- Permissions Modal -->
+
+{{-- -------------------------------------- --}}
+{{--            Permissions Modal           --}}
+{{-- -------------------------------------- --}}
 <div class="modal fade" id="permissions-edit" tabindex="-1" role="dialog" aria-labelledby="permissions" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -7,16 +10,26 @@
     </div>
   </div>
 </div>
-<!-- Permissions Modal -->
+{{-- -------------------------------------- --}}
+{{--            Permissions Modal           --}}
+{{-- -------------------------------------- --}}
 
 
 <h1 class="page-header">Roles &amp; Permissions</h1>
+
+
 <div class="col-md-6">
   
+    {{-- Errors --}}
     <div id="form-information" class="text-center">
       @include('slate::site.partials.form-errors')
     </div>
+    {{-- Errors --}}
 
+
+  {{-- -------------------------------------- --}}
+  {{--                 Roles                  --}}
+  {{-- -------------------------------------- --}}    
     <h3>Roles</h3>
     <div class="row">
     @foreach (Role::all() as $role)
@@ -43,25 +56,35 @@
     @endforeach
   </div>
 
+
+  {{-- -------------------------------------- --}}
+  {{--               Permissions              --}}
+  {{-- -------------------------------------- --}}
   <h3>Permissions</h3>
     <div class="row">
       <div class="panel panel-default">
         <div class="panel-body">
-          <ul class="list-group">
-            @foreach (Permission::all() as $perm)
-              <li class="list-group-item">
-                {{ $perm->display_name}}
-                {{ link_to("admin/permissions/{$perm->id}/edit?modal=true", 'Edit', ['class'=>'pull-right', 'data-toggle'=>'modal', 'data-target'=>'#permissions-edit']) }}
-              </li>
-
-            @endforeach
-          </ul>
+          @if (count(Permission::all())==0)
+            <div class="text-center text-muted"><i>No Permissions</i></div>
+          @else
+            <ul class="list-group">
+              @foreach (Permission::all() as $perm)
+                <li class="list-group-item">
+                  {{ $perm->display_name}}
+                  {{ link_to("admin/permissions/{$perm->id}/edit?modal=true", 'Edit', ['class'=>'pull-right', 'data-toggle'=>'modal', 'data-target'=>'#permissions-edit']) }}
+                </li>
+              @endforeach
+            </ul>
+          @endif
         </div>
       </div>
       
     </div>
   
 
+  {{-- -------------------------------------- --}}
+  {{--         Add Roles & Permissions        --}}
+  {{-- -------------------------------------- --}}
   <h3>Add New Role</h3>
   <div class="well row">
     @include('slate::admin.roles.form')

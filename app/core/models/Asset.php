@@ -7,6 +7,15 @@ use URL;
 class Asset extends \Eloquent {
 	protected $fillable = [];
 
+
+    // ------------------------------------------------------------------------
+    public function delete() {
+      parent::delete();
+      if(File::exists($this->relativeURL())) {
+        File::delete($this->relativeURL());
+      }
+    }
+
     // ------------------------------------------------------------------------
     public function __construct($attributes = array(), $exists = false) {
       parent::__construct($attributes, $exists);

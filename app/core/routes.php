@@ -1,11 +1,7 @@
 <?php
 
-
-
-require __DIR__.'/filters.php';
-
 // ------------------------------------------------------------------------
-// Site Password Protection
+// Site Password Protection - Post
 // ------------------------------------------------------------------------
 Route::post('site-login', function() {
 	if(Input::has('site-password')) {
@@ -42,14 +38,13 @@ Route::post('email-site-password', function() {
 });
 
 
-
 // ------------------------------------------------------------------------
 Route::group(array('before'=>'siteprotection'), function() {
 
 	
 
 	// --------------------------------------------------------------------------
-	// Admin / Roles
+	// Admin
 	// --------------------------------------------------------------------------
 	Route::group(['prefix'=>'admin', 'before'=>'auth'], function() {
 		
@@ -58,19 +53,19 @@ Route::group(array('before'=>'siteprotection'), function() {
 		});
 
 		Route::get('users', function() {
-			return View::make('slate::admin.index', ['page'=>'users']);
+			return View::make('slate::admin.index');
 		});
 
 		Route::get('themes', function() {
-			return View::make('slate::admin.index', ['page'=>'themes']);
+			return View::make('slate::admin.index');
 		});
 
 		Route::get('settings', function() {
-			return View::make('slate::admin.index', ['page'=>'settings']);
+			return View::make('slate::admin.index');
 		});
 
 		Route::get('assets', function() {
-			return View::make('slate::admin.index', ['page'=>'assets']);
+			return View::make('slate::admin.index');
 		});
 
 		Route::get('user/{id}', function($id) {
@@ -107,6 +102,7 @@ Route::group(array('before'=>'siteprotection'), function() {
 	});
 	Route::post('assets/upload', ['uses'=>'core\controllers\AssetsController@upload']);
 	Route::put('assets/{id}', ['uses'=>'core\controllers\AssetsController@edit']);
+	Route::delete('assets/{id}', ['uses'=>'core\controllers\AssetsController@delete']);
 
 
 	// --------------------------------------------------------------------------
@@ -117,10 +113,13 @@ Route::group(array('before'=>'siteprotection'), function() {
 	});
 
 	// --------------------------------------------------------------------------
-	// Register | Login
+	// Register | Login | Google+
 	// --------------------------------------------------------------------------
 	Route::get('register', ['uses'=>'core\controllers\UsersController@register']);
 	Route::get('login', ['uses'=>'core\controllers\UsersController@login']);
+	Route::get('oauth2callback', ['uses'=>'core\controllers\GoogleSessionController@oauth2callback']);
+	Route::post('link-google-account/{id}', ['uses'=>'core\controllers\GoogleSessionController@linkAccount', 'as'=>'google.link']);
+	Route::post('unlink-google-account/{id}', ['uses'=>'core\controllers\GoogleSessionController@unlinkAccount', 'as'=>'google.unlink']);
 
 	// --------------------------------------------------------------------------
 	// Confide routes
@@ -135,7 +134,7 @@ Route::group(array('before'=>'siteprotection'), function() {
 	Route::get('users/reset_password/{token}', 'core\controllers\UsersController@resetPassword');
 	Route::post('users/reset_password', 'core\controllers\UsersController@doResetPassword');
 	Route::get('users/logout', 'core\controllers\UsersController@logout');
-	Route::put('users/{id}', ['uses'=>'core\controllers\UsersController@updateProfile', 'before'=>'auth']);
+	Route::put('users/{id}', ['uses'=>'core\controllers\UsersController@updateProfile', 'before'=>'auth', 'as'=>'user.update']);
 
 	// --------------------------------------------------------------------------
 	// Profiles & Users
@@ -153,3 +152,4 @@ Route::group(array('before'=>'siteprotection'), function() {
 
 
 });
+

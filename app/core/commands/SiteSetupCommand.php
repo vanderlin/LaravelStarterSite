@@ -51,16 +51,6 @@ class SiteSetupCommand extends Command {
 	public function createGoogleCredentials() {
 		$google_creds = array();
 
-		$google_creds['api_key'] = $this->ask('API Key? ');			
-		if($google_creds['api_key']) { 
-			//$this->line(var_export($google_creds)."\n");
-		}
-
-		$google_creds['app_name'] = $this->ask('App name? ');			
-		if($google_creds['app_name']) { 
-			//$this->line(var_export($google_creds)."\n");
-		}
-
 		$google_creds['client_id'] = $this->ask('Client ID? ');			
 		if($google_creds['client_id']) { 
 			//$this->line(var_export($google_creds)."\n");
@@ -76,14 +66,17 @@ class SiteSetupCommand extends Command {
 			//$this->line(var_export($google_creds)."\n");
 		}
 
-		$google_creds['scopes'] = $this->ask('Scopes? ');			
-		if($google_creds['scopes']) { 
-			//$this->line(var_export($google_creds)."\n");
-		}
-
 		return $google_creds;
 	}
 
+	// ------------------------------------------------------------------------
+	public function askQuestion($question, $closure) {
+		$v = $this->ask($question);
+		
+		if($v!=NULL && is_callable($closure)) {
+			call_user_func($closure, $v);
+		}
+	}
 
 	// ------------------------------------------------------------------------
 	/**
@@ -94,38 +87,88 @@ class SiteSetupCommand extends Command {
 	public function fire() {
 		
 		
-		$this->comment("\n*******************************");
-		$this->comment('Setting up Laravel Starter Site');
-		$this->comment("*******************************\n");
+		$this->comment("*************************************");
+		$this->comment('*  Setting up Laravel Starter Site  *');
+		$this->comment("*************************************");
 
 		$this->call('config:publish', ['package'=>'vanderlin/slate', '--path'=>'app/core/config/']);
 
         // google creds
         if($this->confirm('Use Google+ Auth? [yes|no]', true)) {
 
+        	ConfigHelper::save('slate::use_google_login', true);
+        	
         	$google_creds = Config::get('slate::google');
-        	$this->line("\n");
-			if($this->confirm("Enter local Google credentials? [yes|no]", true)) {
-				$google_creds['local'] = $this->createGoogleCredentials();
-			}
+
+        	$this->askQuestion('Google API Key?', function($value) use(&$google_creds) {
+        		$google_creds['api_key'] = $value;
+        	});
+    		$this->line($google_creds['api_key']);
+
+
+        	$this->askQuestion('Google application name?', function($value) use(&$google_creds) {
+        		$google_creds['app_name'] = $value;
+        	});
+    		$this->line($google_creds['app_name']);
+
+
+        	$this->askQuestion('Hosted Domain? This restricts any domain but the one entered.', function($value) use(&$google_creds) {
+        		$google_creds['hd'] = $value;
+        	
+        	});
+			$this->line($google_creds['hd']);
+
+        	$google_scopes = ['https://www.googleapis.com/auth/plus.profile.emails.read',
+        					  'https://www.googleapis.com/auth/plus.login',
+							  'https://www.googleapis.com/auth/plus.me'];
+
 			$this->line("\n");
-			if($this->confirm("Enter remote Google credentials? [yes|no]", true)) {
-				$google_creds['remote'] = $this->createGoogleCredentials();
+        	$scope_choices = $this->choice('OAuth Scopes: (separate numbers with a comma) ', $google_scopes, 0, null, true);
+        	if($scope_choices) {
+        		$google_creds['scopes'] = implode(',', $scope_choices);	
+        	}
+    		$this->line($google_creds['scopes']);
+
+			$this->line("\n");
+        	if($this->confirm("Set Google JSON Credentials. (you can download these files from console.developers.google.com) [yes|no]", true)) {
+        		
+        		// local file 
+	        	$this->askQuestion('Local JSON file path (This is a relative path to public. ie: assests/google/local.json)', function($value) use(&$google_creds) {
+	        		$google_creds['oauth_local_path'] = $value;
+	        	});
+	        	$this->line($google_creds['oauth_local_path']);
+
+				// remote file 
+        		$this->askQuestion('Remote JSON file path (This is a relative path to public. ie: assests/google/remote.json)', function($value) use(&$google_creds) {
+	        		$google_creds['oauth_remote_path'] = $value;
+	        	});
+        		$this->line($google_creds['oauth_remote_path']);
+	        	
+
+        	}
+        	else {
+
+        		$this->line("\n");
+				if($this->confirm("Enter local Google credentials? [yes|no]", true)) {
+					$google_creds['local'] = $this->createGoogleCredentials();
+				}
+				$this->line("\n");
+				if($this->confirm("Enter remote Google credentials? [yes|no]", true)) {
+					$google_creds['remote'] = $this->createGoogleCredentials();
+				}
+				
+				$this->comment("Current Local Google+ Settings:");
+				foreach ($google_creds['local'] as $key => $value) {
+					$this->line("{$key} = {$value}");
+				}
+				$this->comment("Current Remote Google+ Settings:");
+				foreach ($google_creds['remote'] as $key => $value) {
+					$this->line("{$key} = {$value}");
+				}
 			}
 
-			Config::set("slate::google", $google_creds);
-			ConfigHelper::save("slate::google");
-			
-			$this->comment("Current Local Google+ Settings:");
-			foreach ($google_creds['local'] as $key => $value) {
-				$this->line("{$key} = {$value}");
-			}
-			$this->comment("Current Remote Google+ Settings:");
-			foreach ($google_creds['remote'] as $key => $value) {
-				$this->line("{$key} = {$value}");
-			}
-
-			
+			// save the settings
+        	ConfigHelper::save("slate::google", $google_creds);
 
 			// ConfigHelper::setAndSave('google-config.local', $google_creds['local'], 'production');
 			// ConfigHelper::setAndSave('google-config.remote', $google_creds['remote'], 'production');
@@ -231,16 +274,21 @@ class SiteSetupCommand extends Command {
 
 
         // site password
-        if($this->confirm('Use a site password? [yes|no]', true)) {
+        $use_site_pass = $this->confirm('Use a site password? [yes|no]', true);
+        $sitepassword  = "";
+        if($use_site_pass) {
         	$sitepassword = $this->ask('Enter a password for the site? ');
 			if($sitepassword) { 
 				$this->comment("\nPassword to enter site is: {$sitepassword}\n");        	
-				Config::set('slate::site-password', $sitepassword);
-				Config::set('slate::use_site_login', true);
-				ConfigHelper::save('slate::site-password');
-				ConfigHelper::save('slate::use_site_login');				
 			}
         }
+
+        Config::set('slate::site-password', $sitepassword?$sitepassword:'');
+		Config::set('slate::use_site_login', $use_site_pass?true:false);
+
+		ConfigHelper::save('slate::site-password');
+		ConfigHelper::save('slate::use_site_login');				
+	
         
 
    

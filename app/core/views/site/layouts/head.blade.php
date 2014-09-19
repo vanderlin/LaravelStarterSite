@@ -12,7 +12,8 @@
 @include('slate::site.partials.bootstrap-head')
 <script src="{{ asset('assets/js/jquery.hoverIntent.js') }}"></script>
 <script src="{{asset('assets/js/main.js')}}"></script>
-<link href="{{asset('assets/css/main.css')}}" rel="stylesheet">
+
+<link href="{{asset('assets/css/frontend/frontend.css')}}" rel="stylesheet">
 
 <?php $active_theme = Theme::activeTheme() ?>
 @if ($active_theme) 

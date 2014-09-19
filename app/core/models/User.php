@@ -2,13 +2,17 @@
 use Zizaco\Confide\ConfideUser;
 use Zizaco\Confide\ConfideUserInterface;
 use Zizaco\Entrust\HasRole;
-use Eloquent;
+use Eloquent, DB, Auth;
 
 class User extends Eloquent implements ConfideUserInterface {
     
     use ConfideUser;
     use HasRole; 
     protected $hidden = array('password');
+
+    public static function findFromData($data) {
+        return \User::where('id', '=', $data)->orWhere('username', '=', $data)->orWhere('email', '=', $data)->first();
+    }
 
     public function profileImage() {
     	return $this->morphOne('Asset', 'assetable');
@@ -37,6 +41,9 @@ class User extends Eloquent implements ConfideUserInterface {
         return URL::to('traveler/'.$this->username);
     }
 
+    public function isMe() {
+        return Auth::user()->id == $this->id;
+    }
 
     static function findFromEmail($email) {
 

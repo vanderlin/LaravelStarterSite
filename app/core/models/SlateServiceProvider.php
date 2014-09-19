@@ -105,6 +105,7 @@ class SlateServiceProvider extends ServiceProvider {
 		$this->setConnection();
 
 
+	    include __DIR__.'/../filters.php';
 	    include __DIR__.'/../routes.php';
 
 	}

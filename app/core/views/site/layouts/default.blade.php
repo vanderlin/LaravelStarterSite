@@ -28,7 +28,7 @@
     {{-- JS Scripts --}}
     @yield('scripts')
     {{-- JS Scripts --}}
-
+    
   </body>
 </html>
 

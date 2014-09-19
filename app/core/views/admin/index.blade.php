@@ -1,15 +1,17 @@
 @extends('slate::admin.layouts.default')
 
-<?php $page = isset($page)?$page:'settings'; ?>
-
 {{-- Web site Title --}}
 @section('title')
-	{{Config::get('slate::site-name')}} | {{ucfirst($page)}}
+	{{Config::get('slate::site-name')}} | {{ucfirst($link->title)}}
 @stop
 
 {{-- Content --}}
 @section('content')
-
+	
+	@if($link)
+		@include($link->view)
+	@endif
+	{{--
 	@if ($page == 'settings')
 		@include('slate::admin.settings')	
 	@elseif ($page == 'users')
@@ -23,5 +25,5 @@
 	@else 
 		@include('slate::admin.settings')
 	@endif
-	
+	--}}
 @stop

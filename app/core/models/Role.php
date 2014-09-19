@@ -1,4 +1,5 @@
 <?php namespace core\models;
+
 use Zizaco\Entrust\EntrustRole;
 use Zizaco\Entrust\HasRole;
 

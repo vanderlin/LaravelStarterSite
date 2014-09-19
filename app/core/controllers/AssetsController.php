@@ -139,4 +139,15 @@ class AssetsController extends \BaseController {
 		return Redirect::back()->with(['error'=>'Missing file to upload']);
 		
 	}
+
+	// ------------------------------------------------------------------------
+	public function delete($id) {
+		$asset = Asset::find($id);
+		if($asset == null) return Redirect::back()->with(['error'=>'No asset found']);
+	
+		$asset->delete();
+		return Redirect::back()->with(['error'=>'Asset deleted']);
+
+	}
+
 }

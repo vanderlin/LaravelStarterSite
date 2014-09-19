@@ -24,7 +24,7 @@
 		var title = 'Register With Google';
 		var left = (screen.width/2)-(w/2);
   		var top  = (screen.height/2)-(h/2);
-  		var url  = "{{ Vanderlin\Slate\Controllers\GoogleSessionController::generateOAuthLink(['hd'=>'ideo.com']) }}";
+  		var url  = "{{ core\controllers\GoogleSessionController::generateOAuthLink(['hd'=>'ideo.com']) }}";
 
   		if(win) win.close();
   		win = window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
@@ -51,7 +51,7 @@
 		    // ------------------------------------------------------------------------
 			connectServer: function() {	
 				$.ajax({
-					url: '{{ URL::to("google/register") }}?state={{Vanderlin\Slate\Controllers\GoogleSessionController::getState()}}',
+					url: '{{ URL::to("google/register") }}?state={{core\controllers\GoogleSessionController::getState()}}',
 					type: 'POST',
 					dataType: 'json',
         			data: {'code':this.authResult.code},
@@ -104,7 +104,6 @@
 
 		<div class="panel-body">
 			@include('slate::site.user.register-form')
-			{{-- Confide::makeSignupForm()->render() --}}
 		</div>
 	</div>
 
@@ -112,11 +111,7 @@
 	<div class="panel panel-default">
 		<div class="panel-heading"><h4>Register via Google+</h4></div>
 		<div class="panel-body text-center">
-
-			{{-- GoogleSessionController::generateGoogleLoginButton(['data-width'=>'wide']); --}}
-			<a href="{{ Vanderlin\Slate\Controllers\GoogleSessionController::generateOAuthLink(['access_type'=>'offline', 'hd'=>'ideo.com', 'registering'=>true, 'display'=>'popup', 'state'=>'registering']) }}" class="btn btn-default">Register with google</a>
-			<!-- <a href="#register" id="google-register-btn" class="btn btn-default">Register with google</a> -->
-			<div class="error-text" id="form-information"></div>
+			<a href="{{ core\controllers\GoogleSessionController::generateOAuthLink(array_merge(Config::get('slate::google_url_options'),['state'=>'registering'])) }}" class="btn btn-default">Register with google</a>
 		</div>
 	</div>
 	@endif

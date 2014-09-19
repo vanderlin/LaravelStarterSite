@@ -63,9 +63,13 @@
 				</div>
 
 				<div class="panel-body">
-					<form method="POST" class="form-horizontal" role="form" action="{{{ URL::to('users/'.$user->id) }}}" accept-charset="UTF-8">
+					
+				
+					{{ Form::open([ 'route'=>['user.update', $user->id],
+									'method'=>'PUT',
+									'id'=>'user-update-form',
+									'class'=>'form-horizontal']) }}
 	      				<fieldset>
-		      				<input type="hidden" value="PUT" name="_method">
 		      				
 		      				<div class="form-group text-center">
 								<div class="col-sm-12" id="profile-image-container">
@@ -100,21 +104,21 @@
 				        	<div class="form-group">
 								<label for="firstname" class="col-sm-3 control-label">First Name</label>
 				          		<div class="col-sm-9">
-					            	<input class="form-control" placeholder="First Name" type="text" name="firstname" id="firstname" value="{{$user->firstname}}">
+					            	<input autocomplete="off" class="form-control" placeholder="First Name" type="text" name="firstname" id="firstname" value="{{$user->firstname}}">
 					        	</div>
 					        </div>
 
 					        <div class="form-group">
 								<label for="lastname" class="col-sm-3 control-label">Last Name</label>
 				          		<div class="col-sm-9">
-					            	<input class="form-control" placeholder="Last Name" type="text" name="lastname" id="lastname" value="{{$user->lastname}}">
+					            	<input autocomplete="off" class="form-control" placeholder="Last Name" type="text" name="lastname" id="lastname" value="{{$user->lastname}}">
 					        	</div>
 					        </div>
 
 				        	<div class="form-group">
 								<label for="password" class="col-sm-3 control-label">Password</label>
 				          		<div class="col-sm-9">
-					            	<input class="form-control" placeholder="Change Password" type="password" name="password" id="password">
+					            	<input autocomplete="off" class="form-control" placeholder="Change Password" type="password" name="password" id="password">
 					        	</div>
 					        </div>
 					        <div class="form-group">
@@ -123,19 +127,52 @@
 					            	<input class="form-control" placeholder="Confirm Password" type="password" name="password_confirmation" id="password_confirmation">
 					        	</div>
 					        </div>
-				      
+				      		{{ Form::close() }}
+
+		          			@if ($user->isMe() && Config::get('slate::use_google_login'))
+		          				@if ($user->google_token=="")
+		          				{{ Form::open([ 'route'=>['google.link', $user->id],
+															'method'=>'POST',
+															'id'=>'google-link-form',
+															'class'=>'']) }}
+								{{ Form::close() }}
+								@else
+								{{ Form::open([ 'route'=>['google.unlink', $user->id],
+															'method'=>'POST',
+															'id'=>'google-unlink-form',
+															'class'=>'']) }}
+								{{ Form::close() }}
+								@endif
+								
+							@endif
+
+
 							<div class="form-group row">
 				        		<div class="col-md-12 text-right">
-				          			<button type="submit" class="btn btn-default">Update</button>
+				          			<button type="submit" class="btn btn-default" form="user-update-form">Update</button>
 				        		</div>
+
 				      		</div>
+
+							<div class="form-group row">
+				        		<div class="col-md-12 text-center">
+					      		{{-- If we want to link to a google+ account --}}
+			          			@if ($user->isMe() && Config::get('slate::use_google_login'))
+									@if ($user->google_token=="")
+				          				<button type="submit" class="btn btn-default" form="google-link-form">Link Google+ Account</button>
+									@else
+										<button type="submit" class="btn btn-default" form="google-unlink-form">Unlink Google+ Account</button>
+									@endif
+			          			@endif
+			          			</div>
+		          			</div>
 
 				      		<div class="form-group row text-center">
 								@include('slate::site.partials.form-errors')
 				      		<div>
 
 						</fieldset>
-				    </form>
+				    
 				</div>
 			</div>
 		@else 

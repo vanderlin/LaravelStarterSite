@@ -11,23 +11,26 @@
 	'use_google_login' 			=> false,
 	'use_site_login' 			=> false,
 
+	
 	'google' => array(
-		
+	           
+                'oauth_options'      => array('access_type'=>'offline', 'display'=>'popup'),
+                'oauth_local_path'   => "",
+                'oauth_remote_path'  => "",
+                'api_key'            => "API_KEY",
+                'hd'                 => 'HOSTED_DOMAIN',
+                'app_name'           => 'APP_NAME',
+                'scopes'             => 'SCOPES',
+	
 				'remote' => array (
-							    'api_key' 		=> 'API_KEY',
 							    'client_id' 	=> 'CLIENT_ID',
 							    'client_secret' => 'CLIENT_SECRET',
-							    'redirect_uri'  => 'URI',
-							    'scopes' 		=> 'SCOPES',
-							    'app_name' 		=> 'APP_NAME'
+							    'redirect_uri'  => 'URI'
 						    ),
 			 	'local' => array (
-				    		'api_key' 		=> 'API_KEY',
 				    		'client_id' 	=> 'CLIENT_ID',
 				    		'client_secret' => 'CLIENT_SECRET',
-				    		'redirect_uri'  => 'URI',
-				    		'scopes' 		=> 'SCOPES',
-				    		'app_name' 		=> 'APP_NAME'
+				    		'redirect_uri'  => 'URI'
 				    	)
 				 ),
 

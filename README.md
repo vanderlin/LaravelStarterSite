@@ -15,3 +15,13 @@ Move to new repo
 
 To setup the site run    
 `artisan site:setup`
+
+
+NPM:
+install Grunt and Bower
+npm install -g grunt-cli  
+npm install -g bower  
+
+tip:
+`sudo chown -R `whoami` ~/.npm`   		
+`sudo chown -R `whoami` /usr/local/lib/node_modules`   

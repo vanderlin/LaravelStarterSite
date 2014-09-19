@@ -1,10 +1,23 @@
 @if(isset($errors)) 
 	@if (is_array($errors))
 		@foreach ($errors as $err)
-			<div class="alert">{{$err}}</div>
+	        <div class="alert alert-error alert-danger">{{$err}}</div>
 		@endforeach
+    @elseif(!is_object($errors))
+        <div class="alert alert-error alert-danger">{{$errors}}</div>
 	@endif
 @endif
+
+@if(isset($error)) 
+    @if (is_array($error))
+        @foreach ($error as $err)
+            <div class="alert alert-error alert-danger">{{$err}}</div>
+        @endforeach
+    @else
+        <div class="alert alert-error alert-danger">{{$error}}</div>
+    @endif
+@endif
+
 @if (Session::get('error'))
     <div class="alert alert-error alert-danger">
         @if (is_array(Session::get('error')))
@@ -13,9 +26,8 @@
 		{{ Session::get('error') }}
         @endif
     </div>
-
 @endif
 
 @if (Session::get('notice'))
-    <div class="alert">{{ Session::get('notice') }}</div>
+    <div class="alert bg-success">{{ Session::get('notice') }}</div>
 @endif

@@ -15,8 +15,8 @@
     @include('slate::site.partials.bootstrap-head')
 
     <!-- Admin CSS -->
-    <link href="{{asset('assets/css/admin/main.css')}}" rel="stylesheet">
-    <link href="{{asset('assets/css/admin/sb-admin.css')}}" rel="stylesheet">
+    <link href="{{asset('assets/css/backend/backend.css')}}" rel="stylesheet">
+    <link href="{{asset('assets/css/backend/sb-admin.css')}}" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -39,7 +39,7 @@
             {{-- Main Menu --}}
 
             <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
-            @include('slate::admin.layouts.sidebar')
+            @include('slate::admin.layouts.sidebar');
             <!-- /.navbar-collapse -->
 
         </nav>
@@ -90,6 +90,11 @@
     </div>
     <!-- ./ content -->
 
+    <script type="text/javascript">
+      $(document).ready(function($) {
+        $(".alert").delay(2000).fadeOut(300, function() { $(this).remove(); });
+      });
+    </script>
 
   </body>
 </html>

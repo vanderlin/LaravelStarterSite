@@ -31,7 +31,8 @@ class UsersController extends Controller {
 
     // ------------------------------------------------------------------------
     public function show($id) {
-        return View::make('slate::site.user.profile', ['user'=>User::find($id)]);
+        $user = User::findFromData($id);
+        return View::make('slate::site.user.profile', ['user'=>$user]);
     }
 
     // ------------------------------------------------------------------------
@@ -159,7 +160,7 @@ class UsersController extends Controller {
         } else {
             $error = $user->errors()->all(':message');
 
-            return Redirect::action('Vanderlin\Slate\Controllers\UsersController@create')
+            return Redirect::action('core\controllers\UsersController@create')
                 ->withInput(Input::except('password'))
                 ->with('error', $error);
         }

@@ -23,6 +23,7 @@ class CreateUsersRolesPermissionsTable extends Migration {
             $table->string('firstname');
             $table->string('lastname');
             $table->text('google_token');
+            $table->string('google_id');
             $table->string('email');
             $table->string('password');
             $table->string('confirmation_code');

@@ -18,9 +18,11 @@
 
         @if (Auth::check())
         <ul class="nav navbar-nav navbar-left">
-          <li>{{ link_to( '#link-a', 'Link A') }}</li>
-          <li>{{ link_to( '#link-b', 'Link B') }}</li>
-          <li>{{ link_to( '#link-c', 'Link C') }}</li>
+          
+          @foreach (Config::get('slate::site.top-nav') as $nav_link)
+          <?php $nav_link = (object)$nav_link ?>
+            <li>{{ link_to( $nav_link->url, $nav_link->title) }}</li>
+          @endforeach
         </ul>
         @endif
           

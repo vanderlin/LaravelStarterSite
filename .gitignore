@@ -9,3 +9,8 @@ Thumbs.db
 /app/config/packages/vanderlin/
 !/app/storage/
 !/app/storage/*
+node_modules/
+public/assets/uploads/
+app/storage/.DS_Store
+public/assets/css/backend/backend.css
+public/assets/css/frontend/frontend.css

@@ -5,7 +5,7 @@ use Config;
 use Cache;
 use App;
 
-use Vanderlin\Slate\Helpers\ConfigHelper;
+use ConfigHelper;
 use Illuminate\Support\Facades\Session;
 use Controller;
 use Illuminate\Support\Facades\Redirect;

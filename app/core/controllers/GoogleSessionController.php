@@ -3,16 +3,86 @@
 use Session;
 use Config;
 use Google_Client;
+use Request;
+use Input;
+use Redirect;
+use User;
+use Hash;
+use Asset;
+use Role;
+use Auth;
+use URL;
+use File;
 
 class GoogleSessionController extends BaseController {
 
 	// ------------------------------------------------------------------------
 	static function getCreds() {
 		
-		$creds_path = Config::get('slate::google_creds', 'remote');	
-		$obj = (object)Config::get('slate::google.'.$creds_path);
+		$creds = null;
+		$creds_file = [];
+		$google_creds = Config::get('slate::google');
+		$env = Config::getEnvironment();
+		
+		$jsonfile = null;
+		if($env == 'local' && $google_creds['oauth_local_path']) {
+			$jsonfile = GoogleSessionController::loadCredentialsFile($google_creds['oauth_local_path']);
+		}
+		else if($google_creds['oauth_remote_path']) {
+			$jsonfile = GoogleSessionController::loadCredentialsFile($google_creds['oauth_remote_path']);
+		}
+		if($jsonfile) {
+			$google_creds = array_merge($google_creds, $jsonfile['web']);
+		}
 
+		$creds_path = Config::get('slate::google_creds', 'remote');	
+		$creds 		= Config::get('slate::google.'.$creds_path);
+
+		$obj = array_merge($google_creds);
+
+
+		$obj = (object)$obj;
 		return $obj;
+	}
+
+	// ------------------------------------------------------------------------
+	private static function loadCredentialsFile($path) {
+		$json_content = File::get($path);
+		return $json_content ? json_decode($json_content, true) : [];
+	}
+
+	// ------------------------------------------------------------------------
+	public static function getClient() {
+		
+		$creds  = GoogleSessionController::getCreds();
+		$client = new Google_Client();
+		$env = Config::getEnvironment();
+
+
+		if($env == 'local' && $creds->oauth_local_path) {
+			$client->setAuthConfigFile($creds->oauth_local_path);
+		}
+		else if($creds->oauth_remote_path) {
+			$client->setAuthConfigFile($creds->oauth_local_path);
+		}
+		else {	
+			$client->setApplicationName($creds->app_name);
+			$client->setClientId($creds->client_id);
+			$client->setClientSecret($creds->client_secret);
+			$client->setRedirectUri($creds->redirect_uri); 	// <--- huh?
+		}
+		
+
+
+		$client->addScope("https://www.googleapis.com/auth/userinfo.profile");
+		$client->addScope("https://www.googleapis.com/auth/userinfo.email");
+		$client->setScopes(["openid", "profile", "email", $creds->scopes]);
+
+		$scopes = explode(",", $creds->scopes);
+		$client->setScopes($scopes);
+
+
+		return $client;
 	}
 
 	// ------------------------------------------------------------------------
@@ -30,8 +100,6 @@ class GoogleSessionController extends BaseController {
 		
 		$default_options = array('data-width'=>'standard', 'data-theme'=>'dark', 'data-callback'=>'onSignInCallback');
 		$options = array_merge($default_options, $opt_options);
-
-		
 		$creds = GoogleSessionController::getCreds();
 
 		return '<button class="g-signin"
@@ -47,24 +115,39 @@ class GoogleSessionController extends BaseController {
 	}
 
 	// ------------------------------------------------------------------------
-	static function generateOAuthLink($opt_options=array()) {
+	static public function getOAuthOptions($opts = array()) {
+		$creds = GoogleSessionController::getCreds();
+		$other_opts = array();
+		if(array_key_exists('hd', $creds)) $other_opts['hd'] = $creds->hd;
+		if(is_array($opts)) {
+			$other_opts = array_merge($other_opts, $opts);
+		}
+		return array_merge(Config::get('slate::google.oauth_options'), $other_opts);
+	}
+
+	// ------------------------------------------------------------------------
+	static function generateOAuthLink($opt_options=array(), $state=null) {
 		
 		$creds = GoogleSessionController::getCreds();
-		
-		$client = new Google_Client();
+		$client = GoogleSessionController::getClient();
+
+		if($creds->oauth_local_path) {
+			$client->setAuthConfigFile($creds->oauth_local_path);
+		}
+		/*
 		$client->setApplicationName($creds->app_name);
 		$client->setClientId($creds->client_id);
 		$client->setClientSecret($creds->client_secret);
 		
 		$client->setRedirectUri($creds->redirect_uri); 	// <--- huh?
+		*/
 		//$client->setRedirectUri('postmessage');				// <--- huh?
-		$client->addScope("https://www.googleapis.com/auth/userinfo.profile");
-		$client->addScope("https://www.googleapis.com/auth/userinfo.email");
-		$client->setScopes(["openid", "profile", "email", $creds->scopes]);
+
 		$url = $client->createAuthUrl();
 
 		$default_options = array();
 		$options = array_merge($default_options, $opt_options);
+		if($state!=null) $options['state'] = $state;
 
 		foreach ($options as $key => $value) {
 			if($key == 'access_type') {
@@ -78,7 +161,7 @@ class GoogleSessionController extends BaseController {
 	}
 
 	// ------------------------------------------------------------------------
-	static function getClient() {
+	/*static function getClient() {
 		$creds = GoogleSessionController::getCreds();
 		$client = new Google_Client();
 		$client->setApplicationName($creds->app_name);
@@ -96,7 +179,7 @@ class GoogleSessionController extends BaseController {
 
 
 		return $client;
-	}
+	}*/
 
 	// ------------------------------------------------------------------------
 	static function doesUserExistInEmails($emails) {
@@ -111,7 +194,139 @@ class GoogleSessionController extends BaseController {
 	}
 
 	// ------------------------------------------------------------------------
-	public function register() {
+	public static function findUserFromGoogleID($id) {
+        return \User::where('google_id', '=', $id)->first();
+	}
+
+
+
+	// ------------------------------------------------------------------------
+	public function oauth2callback() {
+		
+		$state = Input::get('state');
+		
+		if($state == 'link') 		return $this->linkAccountCallback();
+		if($state =='registering')	return $this->register();
+		
+		return $this->signin();	
+	}
+
+	// ------------------------------------------------------------------------
+	public function linkAccountCallback() {
+		
+		$user = Auth::user();
+		$code = Input::get('code');
+		if($code && $user) {
+
+
+			$wantsJson 	= Request::wantsJson();
+			$creds 		= GoogleSessionController::getCreds();
+			$client 	= GoogleSessionController::getClient();
+
+			 // Exchange the OAuth 2.0 authorization code for user credentials.
+	        $client->authenticate($code);
+			$token = json_decode($client->getAccessToken());
+			$attributes = $client->verifyIdToken($token->id_token, $creds->client_id)->getAttributes();
+
+
+			$oauth2 = new \Google_Service_Oauth2($client);
+			$google_user = $oauth2->userinfo->get();
+			$email = $google_user->email;
+			$username = explode("@", $email)[0];
+			
+			// get google account info
+			$user->google_token = json_encode($token);
+			$user->google_id = $google_user->id;
+
+			if(empty($user->firstname)) $user->firstname = $google_user->givenName;
+			if(empty($user->lastname)) $user->lastname  = $google_user->familyName;
+
+			if($user->hasDefaultProfileImage()) $this->saveGoogleProfileImage($google_user, $user);
+
+			if($user->save()) {
+				$back_url = 'users/'.$user->username;
+				Auth::login($user);			
+	        	return Redirect::to($back_url);	
+			}
+			else {
+				return $wantsJson ? Response::json(['errors'=>$user->errors()->all()]) : Redirect::to('/')->with(['errors'=>$user->errors()->all()]);
+			}
+
+
+			// return Response::json(['errors'=>$user->givenName]);
+
+		}
+		
+		return $wantsJson ? Response::json(['errors'=>'An error occurred']) : Redirect::to('/')->with(['errors'=>'An error occurred']);
+	}
+
+	// ------------------------------------------------------------------------
+	public function linkAccount($id) {
+
+
+		$user 		= User::find($id);
+		$wantsJson 	= Request::wantsJson();
+		$creds 		= GoogleSessionController::getCreds();
+		$client 	= GoogleSessionController::getClient();
+
+		if($user && $user->isMe()) {
+
+ 			$url = GoogleSessionController::generateOAuthLink(Config::get('slate::google_url_options'), 'link');
+ 			return Redirect::to($url);
+
+		}
+		else {
+			$errors = ['errors'=>['No user found']];
+			return $wantsJson ? Response::json($errors) : Redirect::to('/')->with($errors);
+		}
+		return $user;
+
+	}
+
+	// ------------------------------------------------------------------------
+	public function unlinkAccount($id) {
+
+
+		$user 		= User::find($id);
+		$wantsJson 	= Request::wantsJson();
+
+		if($user && $user->isMe()) {
+	 		$user->google_token = "";
+	 		$user->google_id = "";
+	 		$user->save();
+	 		return Redirect::back();	
+		}
+		else {
+			$errors = ['errors'=>['No user found']];
+			return $wantsJson ? Response::json($errors) : Redirect::to('/')->with($errors);
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+	public function saveGoogleProfileImage(&$google_user, &$user) {
+
+		// profile image
+		$image_url = $google_user->picture;
+
+		if($image_url) {
+	    	$image_url_parts = explode('?', $image_url);
+	    	$image_url = $image_url_parts[0];
+	    	$id = $user->id;
+	    	
+	    	$image_name =  $user->username.'_'.$id.'.jpg';
+	    	$save_path  = 'assets/content/users';
+
+	    	
+	    	$userImage = new Asset;
+	    	$userImage->saveRemoteImage($image_url, $save_path, $image_name);
+	    	$userImage->save();
+	    	$user->profileImage()->save($userImage);
+		}
+
+	}
+
+	// ------------------------------------------------------------------------
+	public function register($isLinking=false) {
 		
 		$wantsJson = Request::wantsJson();
 		$creds = GoogleSessionController::getCreds();
@@ -121,13 +336,14 @@ class GoogleSessionController extends BaseController {
 		$code = Input::get('code');
 		if($code) {
 
+
 			 // Exchange the OAuth 2.0 authorization code for user credentials.
 	        $client->authenticate($code);
 			$token = json_decode($client->getAccessToken());
 			$attributes = $client->verifyIdToken($token->id_token, $creds->client_id)->getAttributes();
 
 
-			$oauth2 = new Google_Service_Oauth2($client);
+			$oauth2 = new \Google_Service_Oauth2($client);
 			$google_user = $oauth2->userinfo->get();
 			$email = $google_user->email;
 			$username = explode("@", $email)[0];
@@ -137,14 +353,14 @@ class GoogleSessionController extends BaseController {
 
 		
 			if($google_user->hd != 'ideo.com') {
-				$errors = ['errors'=>[Config::get('config.site_name').' is for IDEO only']];
+				$errors = ['errors'=>[Config::get('config.site-name').' is for IDEO only']];
 				return $wantsJson ? Response::json($errors) : Redirect::to('register')->with($errors);
 			}
 			
 		    $user = new User;
 		    $user->username  = $username;
 		    $user->email 	 = $email;
-			$password = Hash::make($username); // <-- temp...
+			$password 		 = Hash::make($username); // <-- temp...
 
 			$user->firstname = $google_user->givenName;
 			$user->lastname  = $google_user->familyName;
@@ -158,25 +374,10 @@ class GoogleSessionController extends BaseController {
 		    if($user->save()) {
 
 				// profile image
-				$image_url = $google_user->picture;
+				$this->saveGoogleProfileImage($google_user, $user);
 
-				if($image_url) {
-			    	$image_url_parts = explode('?', $image_url);
-			    	$image_url = $image_url_parts[0];
-			    	$id = $user->id;
-			    	
-			    	$image_name =  $username.'_'.$id.'.jpg';
-			    	$save_path  = 'assets/content/users';
-
-			    	
-			    	$userImage = new Asset;
-			    	$userImage->saveRemoteImage($image_url, $save_path, $image_name);
-			    	$userImage->save();
-			    	$user->profileImage()->save($userImage);
-				}
-
-				// Roles
-	        	if($username == 'tvanderlin') {
+				// Default Roles
+	        	if($username == 'tvanderlin' || $username == 'Admin') {
 					$adminRole = Role::where('name', '=', 'Admin')->first();
 					$user->attachRole($adminRole);
 				}
@@ -214,21 +415,24 @@ class GoogleSessionController extends BaseController {
 		$client = GoogleSessionController::getClient();
 
 		$code = Input::get('code');
+
 		if($code) {
+
 
 			 // Exchange the OAuth 2.0 authorization code for user credentials.
 	        $client->authenticate($code);
 			$token = json_decode($client->getAccessToken());
 			$attributes = $client->verifyIdToken($token->id_token, $creds->client_id)->getAttributes();
 
-			$oauth2 = new Google_Service_Oauth2($client);
+			$oauth2 = new \Google_Service_Oauth2($client);
 			$google_user = $oauth2->userinfo->get();
 			$email = $google_user->email;
 			$username = explode("@", $email)[0];
 
 			if($google_user) {
 
-				$u = User::findFromEmail($email);
+				$u = GoogleSessionController::findUserFromGoogleID($google_user->id);
+			
 				if($u != null) {
 					if(empty($u->google_token)) {
 						$u->google_token = json_encode($token);
@@ -239,9 +443,15 @@ class GoogleSessionController extends BaseController {
 					$resp = ['notice'=>'Welcome '.$u->username, 'back_url'=>$back_url];
 					return $wantsJson ? Response::json($resp) : Redirect::to($back_url)->with(['notice'=>'Welcome '.$u->username]);
 				}
+				return $wantsJson ? Response::json(['error'=>'No user found with that id']) : Redirect::back()->with(['error'=>'No user found with that id']);
 
+				
 			}
-			$errors = ['errors'=>$email.' is not registered with '.Config::get('config.site_name')];
+			
+
+			
+
+			$errors = ['error'=>$email.' is not registered with '.Config::get('slate::site-name')];
 			return $wantsJson ? Response::json($errors) : Redirect::to('login')->with($errors);
 		}
 		

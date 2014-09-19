@@ -60,8 +60,11 @@ class ConfigHelper extends \Illuminate\Config\FileLoader {
         return $t;
     }
     // ------------------------------------------------------------------------
-    static function save($namespace, $environment=null) {
+    static function save($namespace, $value=null) {
 
+        if($value != null) {
+            config::set($namespace, $value);
+        }
         $loader = Config::getLoader();
         list($namespace, $item) = explode('::', $namespace);
 
@@ -85,30 +88,6 @@ class ConfigHelper extends \Illuminate\Config\FileLoader {
             return 'Please publish assest/config';    
         }
         
-        return;
-        
-        
-
-        echo "<pre>";
-        print_r([$package_file,
-                 $local_file,
-                 $loader->files->exists($local_file),
-                 $namespace
-                ]);
-        echo "</pre>";
-        dd('');
-
-        $env  = $environment==null ? Config::getEnvironment() : $environment;
-        
-        
-        $items = Config::get($namespace);
-
-        
-        $file = (!$env || ($env == 'production')) ? "{$path}/{$namespace}.php" : "{$path}/{$env}/{$namespace}.php";
-
-        $data = '<?php return '.var_export( $items, true ).';';
-        
-        $loader->files->put($file, $data);
     }
 
     // ------------------------------------------------------------------------
