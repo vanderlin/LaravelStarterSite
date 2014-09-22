@@ -6,11 +6,13 @@ grunt.initConfig({
 
     // Paths variables
     paths: {
+
+
       // Development where put LESS files, etc
       assets: {
         less: 'public/assets/less/',
         css: 'public/assets/css/',
-        js: 'public/assets/js/',
+        js: 'public/assets/js/src/',
         vendor: 'public/assets/vendor/'
       },
 
@@ -22,7 +24,25 @@ grunt.initConfig({
 
     // Task configuration
     concat: {  
-      //...
+      options: {
+        separator: ';',
+      },
+      js_frontend: {
+        src: [
+          '<%= paths.assets.vendor %>jquery/jquery.js',
+          '<%= paths.assets.vendor %>bootstrap/dist/js/bootstrap.js',
+          '<%= paths.assets.js %>frontend.js'
+        ],
+        dest: '<%= paths.js %>frontend.js',
+      },
+      js_backend: {
+        src: [
+          '<%= paths.assets.vendor %>jquery/jquery.js',
+          '<%= paths.assets.vendor %>bootstrap/dist/js/bootstrap.js',
+          '<%= paths.assets.js %>backend.js'
+        ],
+        dest: '<%= paths.js %>backend.js',
+      }
     },  
     less: {
         production: {
@@ -45,22 +65,45 @@ grunt.initConfig({
       //...
     },  
     watch: {
-       less: {
-          files: ['<%= paths.assets.less %>*.less'],  //watched files
-          tasks: ['less'],                            //tasks to run
-          options: {
-            livereload: true                          //reloads the browser
-          }
-        },
+      less: {
+        files: ['<%= paths.assets.less %>*.less'],  //watched files
+        tasks: ['less'],                            //tasks to run
+        options: {
+          livereload: true                          //reloads the browser
+        }
+      },
+      js_frontend: {
+        files: [
+          //watched files
+          '<%= paths.assets.vendor %>jquery/jquery.js',
+          '<%= paths.assets.vendor %>bootstrap/dist/js/bootstrap.js',
+          '<%= paths.assets.js %>frontend.js'
+          ], 
+        tasks: ['concat:js_frontend'],
+        options: {
+          livereload: true                        //reloads the browser
+        }
+      },
+      js_backend: {
+        files: [
+          //watched files
+          '<%= paths.assets.vendor %>jquery/jquery.js',
+          '<%= paths.assets.vendor %>bootstrap/dist/js/bootstrap.js',
+          '<%= paths.assets.js %>backend.js'
+        ],
+        tasks: ['concat:js_backend'],   
+        options: {
+          livereload: true                        //reloads the browser
+        }
+      }
+      
     }  
 });
 
   // Plugin loading
-  // grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-less');
-  // grunt.loadNpmTasks('grunt-contrib-uglify');
-  // grunt.loadNpmTasks('grunt-phpunit');
 
   // Task definition
   grunt.registerTask('default', ['watch']);

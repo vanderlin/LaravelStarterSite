@@ -45,19 +45,6 @@
         </nav>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     <!-- Main Navigation -->
     {{--@include('site.layouts.main-navigation')--}}
     <!-- Main Navigation -->  

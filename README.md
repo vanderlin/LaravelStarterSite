@@ -25,3 +25,6 @@ npm install -g bower
 tip:
 `sudo chown -R `whoami` ~/.npm`   		
 `sudo chown -R `whoami` /usr/local/lib/node_modules`   
+
+Bower:
+`bower install`
