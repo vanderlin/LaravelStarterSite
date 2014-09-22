@@ -124,6 +124,6 @@ grunt.initConfig({
 
   // Task definition
   grunt.registerTask('default', ['watch']);
-  grunt.registerTask('setup', ['less', 'js_frontend', 'js_backend']);
+  grunt.registerTask('setup', ['less', 'concat:js_frontend', 'concat:js_backend', 'uglify:frontend', 'uglify:backend']);
 
 };
