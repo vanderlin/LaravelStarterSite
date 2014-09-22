@@ -29,7 +29,8 @@ grunt.initConfig({
       },
       js_frontend: {
         src: [
-          '<%= paths.assets.vendor %>jquery/jquery.js',
+          '<%= paths.assets.vendor %>jquery/dist/jquery.js',
+          '<%= paths.assets.vendor %>jquery-ui/jquery-ui.js',
           '<%= paths.assets.vendor %>bootstrap/dist/js/bootstrap.js',
           '<%= paths.assets.js %>frontend.js'
         ],
@@ -37,7 +38,8 @@ grunt.initConfig({
       },
       js_backend: {
         src: [
-          '<%= paths.assets.vendor %>jquery/jquery.js',
+          '<%= paths.assets.vendor %>jquery/dist/jquery.js',
+          '<%= paths.assets.vendor %>jquery-ui/jquery-ui.js',
           '<%= paths.assets.vendor %>bootstrap/dist/js/bootstrap.js',
           '<%= paths.assets.js %>backend.js'
         ],
@@ -59,7 +61,19 @@ grunt.initConfig({
         }
     },  
     uglify: {
-      //...
+      options: {
+        mangle: false  // Use if you want the names of your functions and variables unchanged
+      },
+      frontend: {
+        files: {
+          '<%= paths.js %>frontend.min.js': '<%= paths.js %>frontend.js',
+        }
+      },
+      backend: {
+        files: {
+          '<%= paths.js %>backend.min.js': '<%= paths.js %>backend.js',
+        }
+      },
     },  
     phpunit: {
       //...
@@ -75,11 +89,12 @@ grunt.initConfig({
       js_frontend: {
         files: [
           //watched files
+          '<%= paths.assets.vendor %>jquery-ui/jquery-ui.js',
           '<%= paths.assets.vendor %>jquery/jquery.js',
           '<%= paths.assets.vendor %>bootstrap/dist/js/bootstrap.js',
           '<%= paths.assets.js %>frontend.js'
           ], 
-        tasks: ['concat:js_frontend'],
+        tasks: ['concat:js_frontend', 'uglify:frontend'],
         options: {
           livereload: true                        //reloads the browser
         }
@@ -87,11 +102,12 @@ grunt.initConfig({
       js_backend: {
         files: [
           //watched files
+          '<%= paths.assets.vendor %>jquery-ui/jquery-ui.js',
           '<%= paths.assets.vendor %>jquery/jquery.js',
           '<%= paths.assets.vendor %>bootstrap/dist/js/bootstrap.js',
           '<%= paths.assets.js %>backend.js'
         ],
-        tasks: ['concat:js_backend'],   
+        tasks: ['concat:js_backend', 'uglify:backend'],   
         options: {
           livereload: true                        //reloads the browser
         }
@@ -104,6 +120,7 @@ grunt.initConfig({
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-less');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
 
   // Task definition
   grunt.registerTask('default', ['watch']);

@@ -13,6 +13,7 @@
 
     <!-- Bootstrap -->
     @include('slate::site.partials.bootstrap-head')
+    <script src="{{asset('assets/js/backend.min.js')}}"></script>
 
     <!-- Admin CSS -->
     <link href="{{asset('assets/css/backend/backend.css')}}" rel="stylesheet">

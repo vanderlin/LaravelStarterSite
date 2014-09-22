@@ -16,5 +16,9 @@ public/assets/uploads/
 app/storage/.DS_Store
 public/assets/css/backend/backend.css
 public/assets/css/frontend/frontend.css
+
 public/assets/js/backend.js
 public/assets/js/frontend.js
+
+public/assets/js/backend.min.js
+public/assets/js/frontend.min.js

@@ -9,11 +9,12 @@
 </title>
 
 <!-- Bootstrap -->
+<script src="{{asset('assets/js/frontend.min.js')}}"></script>
 @include('slate::site.partials.bootstrap-head')
-<script src="{{ asset('assets/js/jquery.hoverIntent.js') }}"></script>
-<script src="{{asset('js/frontend.js')}}"></script>
+<script src="{{ asset('assets/js/src/jquery.hoverIntent.js') }}"></script>
 
-<link href="{{asset('css/frontend/frontend.css')}}" rel="stylesheet">
+
+<link href="{{asset('assets/css/frontend/frontend.css')}}" rel="stylesheet">
 
 <?php $active_theme = Theme::activeTheme() ?>
 @if ($active_theme) 
