@@ -30,7 +30,6 @@
   		win = window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
 
 	});
-
 	var helper = (function() {
   		var authResult = undefined;
 
@@ -111,7 +110,7 @@
 	<div class="panel panel-default">
 		<div class="panel-heading"><h4>Register via Google+</h4></div>
 		<div class="panel-body text-center">
-			<a href="{{ core\controllers\GoogleSessionController::generateOAuthLink(array_merge(Config::get('slate::google_url_options'),['state'=>'registering'])) }}" class="btn btn-default">Register with google</a>
+			<a href="{{ core\controllers\GoogleSessionController::generateOAuthLink(Config::get('slate::google_url_options'), 'registering') }}" class="btn btn-default">Register with google</a>
 		</div>
 	</div>
 	@endif

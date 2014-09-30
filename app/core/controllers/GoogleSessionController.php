@@ -145,6 +145,9 @@ class GoogleSessionController extends BaseController {
 
 		$url = $client->createAuthUrl();
 
+		if(is_array($opt_options)===false) {
+			$opt_options = (array)$opt_options;
+		}
 		$default_options = array();
 		$options = array_merge($default_options, $opt_options);
 		if($state!=null) $options['state'] = $state;

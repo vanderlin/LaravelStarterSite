@@ -10,7 +10,6 @@
 
 <!-- Bootstrap -->
 <script src="{{asset('assets/js/frontend.min.js')}}"></script>
-@include('slate::site.partials.bootstrap-head')
 <script src="{{ asset('assets/js/src/jquery.hoverIntent.js') }}"></script>
 
 
