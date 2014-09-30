@@ -17,17 +17,7 @@
 // --------------------------------------------------------------------------
 // Example how to override the core routes - ie: Home
 // --------------------------------------------------------------------------	
-Route::get('/', ['before'=>'siteprotection', function() {
-
-	// //$e = (array)core\controllers\GoogleSessionController::getCreds();
-	// //return $e;
-	// 	$creds = core\controllers\GoogleSessionController::getCreds();
-		
-	// 	echo "<br><br><br><br><br><br><pre>";
-	// 	//setAuthConfig
-	// 	print_r($creds);
-	// 	echo "</pre>";
-	
+Route::get('/', ['before'=>'siteprotection', function() {	
 	if(Auth::check()) {
 		return View::make('slate::site.user.profile', ['user'=>Auth::user()]);
 	}

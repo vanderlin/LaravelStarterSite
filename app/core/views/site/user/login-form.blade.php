@@ -1,5 +1,4 @@
-<form method="POST" action="{{{ URL::to('/users/login') }}}" accept-charset="UTF-8">
-    <input type="hidden" name="_token" value="{{{ Session::getToken() }}}">
+{{ Form::open(['route'=>'users.login']) }}
     <fieldset>
         <div class="form-group">
             <label for="email">{{{ Lang::get('confide::confide.username_e_mail') }}}</label>
@@ -37,4 +36,4 @@
 
         </div>
     </fieldset>
-</form>
+{{ Form::close() }}

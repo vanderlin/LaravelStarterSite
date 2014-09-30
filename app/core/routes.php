@@ -122,12 +122,12 @@ Route::group(array('before'=>'siteprotection'), function() {
 	Route::post('unlink-google-account/{id}', ['uses'=>'core\controllers\GoogleSessionController@unlinkAccount', 'as'=>'google.unlink']);
 
 	// --------------------------------------------------------------------------
-	// Confide routes
+	// User Confide routes
 	// --------------------------------------------------------------------------
 	Route::get('users/create', 'core\controllers\UsersController@create');
 	Route::post('users', 'core\controllers\UsersController@store');
 	Route::get('users/login', 'core\controllers\UsersController@login');
-	Route::post('users/login', 'core\controllers\UsersController@doLogin');
+	Route::post('users/login', ['uses'=>'core\controllers\UsersController@doLogin', 'as'=>'users.login']);
 	Route::get('users/confirm/{code}', 'core\controllers\UsersController@confirm');
 	Route::get('users/forgot_password', 'core\controllers\UsersController@forgotPassword');
 	Route::post('users/forgot_password', 'core\controllers\UsersController@doForgotPassword');

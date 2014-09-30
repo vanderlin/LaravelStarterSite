@@ -16,7 +16,17 @@ Move to new repo
 To setup the site run    
 `artisan site:setup`
 
+Install Grunt Assets
+`npm install`		
+`bower install`		
+		
+Now just run Grunt 		
+`grunt 'setup'`		
 
+Now just run Grunt watch		
+`grunt`
+
+**Need to install NPM**		
 NPM:
 install Grunt and Bower
 npm install -g grunt-cli  
